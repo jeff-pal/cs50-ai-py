@@ -63,10 +63,8 @@ def main():
     print("Data loaded.")
 
     source = person_id_for_name(input("Name: "))
-    # source = person_id_for_name("Demi Moore")
     if source is None:
         sys.exit("Person not found.")
-    # target = person_id_for_name("Emma Watson")
     target = person_id_for_name(input("Name: "))
     if target is None:
         sys.exit("Person not found.")
@@ -116,15 +114,16 @@ def search(states, target):
         return None
 
 def shortest_path(source, target):
+    if source == target:
+        return ()
+
     initial_path = ()
     expanded_movies = set()
     children = neighbors_for_person(source)
     initial_node = (initial_path, expanded_movies, children)
     initial_states = (initial_node,)
-    print("start")
     result_path = search(initial_states, target)
-    print("end")
-    print(result_path)
+
     if result_path and len(result_path) > 0:
         return list(result_path)
     else:
