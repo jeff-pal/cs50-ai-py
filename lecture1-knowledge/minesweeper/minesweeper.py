@@ -105,27 +105,36 @@ class Sentence():
         """
         Returns the set of all cells in self.cells known to be mines.
         """
-        raise NotImplementedError
+        if len(self.cells) == self.count and self.count != 0:
+            return self.cells
+        else:
+            return set()
 
     def known_safes(self):
         """
         Returns the set of all cells in self.cells known to be safe.
         """
-        raise NotImplementedError
+        if self.count == 0:
+            return self.cells
+        else:
+            return set()
 
     def mark_mine(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be a mine.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            self.cells.remove(cell)
+            self.count -= 1
 
     def mark_safe(self, cell):
         """
         Updates internal knowledge representation given the fact that
         a cell is known to be safe.
         """
-        raise NotImplementedError
+        if cell in self.cells:
+            self.cells.remove(cell)
 
 
 class MinesweeperAI():
@@ -182,7 +191,19 @@ class MinesweeperAI():
             5) add any new sentences to the AI's knowledge base
                if they can be inferred from existing knowledge
         """
-        raise NotImplementedError
+
+        # should mark the cell as one of the moves made in the game.
+        self.moves_made.add(cell)
+
+        # should mark the cell as a safe cell, updating any sentences that contain the cell as well.
+        self.mark_safe(cell)
+
+        # should add a new sentence to the AI’s knowledge base, based on the value of cell and count,
+        # to indicate that count of the cell’s neighbors are mines.
+        # Be sure to only include cells whose state is still undetermined in the sentence.
+        if (new_sentence := self.get_new_sentence(cell, count)) is not None:
+            self.knowledge.append(new_sentence)
+            self.handle_knowledge_change()
 
     def make_safe_move(self):
         """
@@ -193,7 +214,13 @@ class MinesweeperAI():
         This function may use the knowledge in self.mines, self.safes
         and self.moves_made, but should not modify any of those values.
         """
-        raise NotImplementedError
+
+        safe_moves = self.safes - self.moves_made
+        
+        if safe_moves:
+            return random.choice(list(safe_moves))
+
+        return None
 
     def make_random_move(self):
         """
@@ -202,4 +229,96 @@ class MinesweeperAI():
             1) have not already been chosen, and
             2) are not known to be mines
         """
-        raise NotImplementedError
+        
+        all_possible_moves = set((i, j) for i in range(self.height) for j in range(self.width))
+        possible_moves = all_possible_moves - self.moves_made - self.mines
+
+        if possible_moves:
+            return random.choice(list(possible_moves))
+
+        return None
+
+    def get_new_sentence(self, cell, count):
+        neighbors = set()
+        for di in [-1, 0, 1]:
+            for dj in [-1, 0, 1]:
+                if di == 0 and dj == 0:
+                    continue
+                ni, nj = cell[0] + di, cell[1] + dj
+                new_cell = (ni, nj)
+                if 0 <= ni < self.height and 0 <= nj < self.width:
+                    if new_cell in self.mines:
+                        count -= 1
+                        continue
+                    elif new_cell not in self.safes:
+                        neighbors.add((ni, nj))
+
+        if len(neighbors) > 0:
+            return Sentence(neighbors, count)
+        else:
+            return None
+
+    # Note that any time that you make any change to your AI’s knowledge, it may be possible 
+    # to draw new inferences that weren’t possible before. 
+    # Be sure that those new inferences are added to the knowledge base if it is possible to do so.
+    def handle_knowledge_change(self):
+        # If, based on any of the sentences in self.knowledge, new cells can be marked as safe or as mines,
+        # then the function should do so.
+        knowledge_changed = False
+        safes = set()
+        mines = set()
+
+        for sentence in self.knowledge:
+            safes = safes.union(sentence.known_safes())
+            mines = mines.union(sentence.known_mines())
+
+        if safes:
+            knowledge_changed = True
+            for safe in safes:
+                self.mark_safe(safe)
+        if mines:
+            knowledge_changed = True
+            for mine in mines:
+                self.mark_mine(mine)
+
+        empty = Sentence(set(), 0)
+        self.knowledge[:] = [x for x in self.knowledge if x != empty]
+
+        # If, based on any of the sentences in self.knowledge,
+        # new sentences can be inferred (using the subset method described in the Background),
+        # then those sentences should be added to the knowledge base as well.
+        for sentence1 in self.knowledge:
+            for sentence2 in self.knowledge:
+                
+                if sentence1.cells == sentence2.cells:
+                    continue
+
+                if sentence1.cells == set() and sentence1.count > 0:
+                    print('empty sentence with count grater than 0 found')
+                    raise ValueError("empty sentence with count grater than 0 found")
+
+                if sentence1.cells.issubset(sentence2.cells):
+                    difference_cells = sentence2.cells - sentence1.cells
+                    difference_count = sentence2.count - sentence1.count
+                    new_sentence = Sentence(difference_cells, difference_count)
+
+                    if new_sentence not in self.knowledge:
+                        knowledge_changed = True
+                        self.knowledge.append(new_sentence)
+        
+        if knowledge_changed:
+            self.handle_knowledge_change()
+
+    def get_neighbors(self, cell):
+        neighbors = set()
+        for di in [-1, 0, 1]:
+            for dj in [-1, 0, 1]:
+                if di == 0 and dj == 0:
+                    continue
+                ni, nj = cell[0] + di, cell[1] + dj
+                if 0 <= ni < self.height and 0 <= nj < self.width:
+                    neighbors.add((ni, nj))
+        if len(neighbors) > 0:
+            return list(neighbors)
+        else:
+            return None
