@@ -1,6 +1,6 @@
 ## TODO
 ```bash
-remove pip install check50
+remove pip3 install check50
 ```
 
 ## Test
