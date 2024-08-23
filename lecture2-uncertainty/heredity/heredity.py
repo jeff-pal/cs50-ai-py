@@ -157,13 +157,16 @@ def joint_probability(people, one_gene, two_genes, have_trait):
 
             for parent in [mother, father]:
                 parent_gene_copies = gene_copies(parent, one_gene, two_genes)
-                p_parent_pass_gene_and_not_mutate = PROBS['mutation'] if parent_gene_copies == 0 else 0.5 if parent_gene_copies == 1 else 1 - PROBS['mutation']
+                p_parent_pass_gene_and_not_mutate = PROBS[
+                    'mutation'] if parent_gene_copies == 0 else 0.5 if parent_gene_copies == 1 else 1 - PROBS['mutation']
                 gene_mutate_probabilities[parent] = p_parent_pass_gene_and_not_mutate
 
             if person_gene_copies == 0:
-                probability *= (1 - gene_mutate_probabilities[mother]) * (1 - gene_mutate_probabilities[father])
+                probability *= (1 - gene_mutate_probabilities[mother]) * \
+                    (1 - gene_mutate_probabilities[father])
             elif person_gene_copies == 1:
-                probability *= (1 - gene_mutate_probabilities[mother]) * gene_mutate_probabilities[father] + gene_mutate_probabilities[mother] * (1 - gene_mutate_probabilities[father])
+                probability *= (1 - gene_mutate_probabilities[mother]) * gene_mutate_probabilities[father] + \
+                    gene_mutate_probabilities[mother] * (1 - gene_mutate_probabilities[father])
             else:
                 probability *= gene_mutate_probabilities[mother] * gene_mutate_probabilities[father]
 
@@ -201,8 +204,11 @@ def normalize(probabilities):
                 normalized[person][variable][prob] = normalized_val
     return normalized
 
+
 def gene_copies(person, one_gene, two_genes):
     return 1 if person in one_gene else 2 if person in two_genes else 0
 
+
 if __name__ == "__main__":
     main()
+
