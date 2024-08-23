@@ -86,24 +86,20 @@ def sample_pagerank(corpus, damping_factor, n):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    page = random.choice(list(corpus))
-    transitions = transition_model(corpus, page, damping_factor)
+    random_page = random.choice(list(corpus))
+    transitions = transition_model(corpus, random_page, damping_factor)
     
-    keys = list(transitions.keys())
-    probs = list(transitions.values())
+    current_keys = list(transitions.keys())
+    current_probs = list(transitions.values())
 
-    samples = {item: 0 for item in corpus}
+    pagerank = {item: 0 for item in corpus}
 
     for _ in range(n):
-        page = random.choices(keys, weights=probs)[0]
-        samples[page] += 1
-        transitions = transition_model(corpus, page, damping_factor)
-        keys = list(transitions.keys())
-        probs = list(transitions.values())
-    
-    pagerank = {item: 0 for item in corpus}
-    for item, value in samples.items():
-        pagerank[item] = value / n
+        next_page = random.choices(current_keys, weights=current_probs)[0]
+        pagerank[next_page] += 1 / n
+        transitions = transition_model(corpus, next_page, damping_factor)
+        current_keys = list(transitions.keys())
+        current_probs = list(transitions.values())
 
     return pagerank
 
@@ -117,31 +113,29 @@ def iterate_pagerank(corpus, damping_factor):
     their estimated PageRank value (a value between 0 and 1). All
     PageRank values should sum to 1.
     """
-    N = len(corpus)
-    pagerank = {item: 0 for item in corpus} 
-    for item in corpus:
-        pagerank[item] = 1 / N
+    corpus_links = corpus
+    n_corpus_links = len(corpus_links)
+    initial_rank = 1 / n_corpus_links
+    pagerank = {item: initial_rank for item in corpus_links}
+    pagerank_prev = {item: 0 for item in corpus_links} 
+    current_page_rank_change = initial_rank
 
-    pagerank_prev = {item: 0 for item in corpus} 
-
-    while True:
-        for page in corpus:
+    while current_page_rank_change > 0.001:
+        for page in corpus_links:
             rank = 0
-            for key, links in corpus.items():
+            for key, links in corpus_links.items():
                 if len(links) == 0:
-                    rank += pagerank[key] / N
+                    rank += pagerank[key] / n_corpus_links
                 if page in links:
                     rank += pagerank[key] / len(links)
-            pagerank[page] = (1 - damping_factor) + \
-                (damping_factor * rank)
+            pagerank[page] = (1 - damping_factor) + (damping_factor * rank)
         
-        diff = max([abs(pagerank_prev[key] - item) for key, item in pagerank.items()])
-        if diff < 0.001:
-            break
+        current_page_rank_change = max([abs(pagerank_prev[key] - item) 
+                                        for key, item in pagerank.items()])
         pagerank_prev = {key: item for key, item in pagerank.items()}
 
-    for key, item in pagerank.items():
-        pagerank[key] = pagerank[key] / N
+    for key in pagerank:
+        pagerank[key] = pagerank[key] / n_corpus_links
 
     return pagerank
 
