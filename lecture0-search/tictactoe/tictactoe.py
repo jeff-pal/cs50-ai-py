@@ -8,7 +8,8 @@ X = "X"
 O = "O"
 EMPTY = None
 
-players = { X: 1, O: -1 }
+players = {X: 1, O: -1}
+
 
 def copy_board(board):
     return [
@@ -17,6 +18,7 @@ def copy_board(board):
         board[2][:]
     ]
 
+
 def initial_state():
     """
     Returns starting state of the board.
@@ -24,6 +26,7 @@ def initial_state():
     return [[EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY],
             [EMPTY, EMPTY, EMPTY]]
+
 
 def player(board):
     """
@@ -47,6 +50,7 @@ def player(board):
 
     return min(counter, key=counter.get)
 
+
 def actions(board):
     """
     Returns set of all possible actions (i, j) available on the board.
@@ -59,7 +63,8 @@ def actions(board):
                 possible_moves.add((i, j))
     
     return possible_moves if possible_moves else None
-            
+
+
 def result(board, action):
     """
     Returns the board that results from making move (i, j) on the board.
@@ -79,6 +84,7 @@ def result(board, action):
     
     new_board[row][col] = player(board)
     return new_board
+
 
 def winner(board):
     """
@@ -101,11 +107,13 @@ def winner(board):
     if board[0][2] == board[1][1] == board[2][0] != EMPTY:
         return target_diagonal2
 
+
 def terminal(board):
     """
     Returns True if game is over, False otherwise.
     """
     return actions(board) is None or winner(board) is not None
+
 
 def utility(board):
     """
@@ -114,8 +122,10 @@ def utility(board):
     winner_player = winner(board)
     return players.get(winner_player, 0)
 
+
 def min_value(board):
-    if (terminal(board)): return (utility(board), None)
+    if (terminal(board)):
+        return (utility(board), None)
 
     v = None
     optimal_action = None
@@ -131,8 +141,10 @@ def min_value(board):
     
     return (v, optimal_action)
 
+
 def max_value(board):
-    if (terminal(board)): return (utility(board), None)
+    if (terminal(board)):
+        return (utility(board), None)
 
     v = None
     optimal_action = None
@@ -149,11 +161,15 @@ def max_value(board):
 
     return (v, optimal_action)
 
+
 def minimax(board):
     """
     Returns the optimal action for the current player on the board.
     """
-    if (terminal(board)): return None
+    if (terminal(board)):
+        return None
 
-    if player(board) == X: return max_value(board)[1]
-    else: return min_value(board)[1]
+    if player(board) == X:
+        return max_value(board)[1]
+    else:
+        return min_value(board)[1]
