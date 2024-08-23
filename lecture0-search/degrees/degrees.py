@@ -101,7 +101,7 @@ def search(states, target):
                 new_expanded_movies.add(movie_id)
                 expanded_children = neighbors_for_person(person_id)
 
-                if len(expanded_children)  > 0:
+                if len(expanded_children) > 0:
                     state = (expanded_path, (), expanded_children)
                     expanded_states = expanded_states + (state,)
 
@@ -112,6 +112,7 @@ def search(states, target):
         return search(expanded_states, target)
     else:
         return None
+
 
 def shortest_path(source, target):
     if source == target:
