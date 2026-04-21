@@ -131,6 +131,42 @@ def shortest_path(source, target):
         return None
 
 
+def shortest_pathV2(source, target):
+    """
+    Returns the shortest list of (movie_id, person_id) pairs
+    that connect the source to the target.
+
+    If no possible path, returns None.
+    """
+    if source == target:
+        return ()
+
+    initial_node = Node(source, None, None)
+    frontier = QueueFrontier()
+    frontier.add(initial_node)
+    visited = set()
+
+    while not frontier.empty():
+        node = frontier.remove()
+        visited.add(initial_node.state)
+
+        if node.state == target:
+            path = []
+            while node.parent is not None:
+                path.append((node.action, node.state))
+                node = node.parent
+            path.reverse()
+            return path
+        
+        children = neighbors_for_person(node.state)
+        
+        for movie_id, person_id in children:
+            if person_id not in visited:
+                frontier.add(Node(person_id, node, movie_id))
+    
+    return ()
+
+
 def person_id_for_name(name):
     """
     Returns the IMDB id for a person's name,
